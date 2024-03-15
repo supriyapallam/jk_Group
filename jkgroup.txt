@@ -1,0 +1,61 @@
+//Design Code
+`include "jk_lat.v";
+`include "jk_ms.v";
+`include "jk_ffpe.v";
+`include "jk_ffne.v";
+
+module jk_group(output ql,qms,qpe,qne,input clk,j,k);
+  jk_latch a1(ql,,j,k,clk);
+  master_slave_jklatch a2(qms,,j,k,clk);
+  jk_ff a3(qpe,,clk,j,k);
+  jk_ffne a4(qne,,clk,j,k);
+endmodule
+
+//Test Bench Code
+module tb();
+  wire ql,qms,qpe,qne;
+  reg clk,j,k;
+  jk_group DUT(ql,qms,qpe,qne,clk,j,k);
+  
+  initial
+    begin
+      clk=1'b0;
+      forever #4 clk=~clk;
+    end
+  
+  initial
+    begin
+      j=1'b0; k=1'b1; //reset
+      #10;
+      j=1'b1; k=1'b0; //set
+      #5;
+      j=1'b0; k=1'b0; //previous
+      #3;
+      j=1'b1; k=1'b1; //toggle
+      #5;
+      j=1'b0; k=1'b1; //reset
+      #3;
+      j=1'b1; k=1'b0; //set
+      #5;
+      j=1'b1; k=1'b1; //Toggle
+      #5;
+      j=1'b0;; k=1'b0; //previous
+      #3;
+      $finish;
+    end
+  
+  initial
+    begin
+      $dumpfile("test.vcd");
+      $dumpvars(1);
+    end
+  
+  initial
+    begin
+      $timeformat(-9,0,"ns",10);
+      $monitor("time=%0t,j=%b,k=%b,ql=%b,qms=%b,qpe=%b,qne=%b",$time,j,k,ql,qms,qpe,qne);
+    end
+endmodule
+
+  
+  
